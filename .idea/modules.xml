@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/test3database.iml" filepath="$PROJECT_DIR$/test3database.iml" />
-      <module fileurl="file://C:\Users\d27sa\AndroidStudioProjects\test3database-master\test3database.iml" filepath="C:\Users\d27sa\AndroidStudioProjects\test3database-master\test3database.iml" />
     </modules>
   </component>
 </project>

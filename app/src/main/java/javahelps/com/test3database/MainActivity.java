@@ -33,11 +33,13 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.TileOverlay;
+import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.maps.android.heatmaps.HeatmapTileProvider;
 
 import java.util.ArrayList;
-
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -50,6 +52,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     int mSelectedItem;
     ArrayList<HouseDetails> mSelected;
     static int CABMode = 0;
+    HeatmapTileProvider mProvider;
+    TileOverlay mOverlay;
+    LatLng latLng;
+    private int PROXIMITY_RADIUS = 10000;
+
+    private static final String FINE_LOCATION = android.Manifest.permission.ACCESS_FINE_LOCATION;
+    private static final String COURSE_LOCATION = android.Manifest.permission.ACCESS_FINE_LOCATION;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
+    private static final float DEFAULT_ZOOM = 15;
+
+    //var
+    private Boolean mLocationPermissionGranted = false;
+    private GoogleMap mMap;
+    private FusedLocationProviderClient mFusedLocationProviderClient;
 
 
 
@@ -95,11 +111,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //markLocations();
 
 
-                for(LatLng location : retrivePositions) {
+               /* for(LatLng location : retrivePositions) {
                     options.position(location)
                             .icon(BitmapDescriptorFactory.defaultMarker(270f));
                     mMap.addMarker(options);
-                }
+                }*/
                 //options.icon(BitmapDescriptorFactory.defaultMarker(0f));
                 //moveCamera(retrivePositions.get(i),12f);
                 Log.d(TAG, "onItemClick: postion obtained" + retrivePositions.get(i));
@@ -109,9 +125,29 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         .icon(BitmapDescriptorFactory.defaultMarker(200f));
                 mMap.addMarker(options);
                 moveCamera(retrivePositions.get(i),17f);
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
 
+                latLng = retrivePositions.get(i);
+
+                setNearbyRestaurants();
+                setNearbyHospitals();
+                setNearybySchools();
             }
         });
+
+        /*// check if Google Play Services available or not
+        private boolean CheckGooglePlayServices() {
+            GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
+            int result = googleAPI.isGooglePlayServicesAvailable(this);
+            if(result != ConnectionResult.SUCCESS) {
+                if(googleAPI.isUserResolvableError(result)) {
+                    googleAPI.getErrorDialog(this, result,
+                            0).show();
+                }
+                return false;
+            }
+            return true;
+        }*/
 
         mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         mListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
@@ -211,18 +247,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.setIndoorEnabled(true);
 
         }
+
+
         
     }
 
-    private static final String FINE_LOCATION = android.Manifest.permission.ACCESS_FINE_LOCATION;
-    private static final String COURSE_LOCATION = android.Manifest.permission.ACCESS_FINE_LOCATION;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
-    private static final float DEFAULT_ZOOM = 15;
 
-    //var
-    private Boolean mLocationPermissionGranted = false;
-    private GoogleMap mMap;
-    private FusedLocationProviderClient mFusedLocationProviderClient;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
@@ -363,18 +393,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    public void jump(View view){
-        String packageName = "io.ionic.starter";
-        Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
-
-        if(intent == null) {
-            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+packageName));
-        }
-
-        startActivity(intent);
-    }
-
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         Log.d(TAG, "onRequestPermissionsResult: called");
@@ -397,5 +415,101 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         }
+    }
+
+    //for adding the heatmaps
+    private void addHeatMap() {
+
+        //get the locations from database
+        DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this);
+        databaseAccess.open();
+
+        ArrayList<LatLng> retrivePositions = databaseAccess.position_details(iReceiveFromFirstActivity);
+
+        // Create a heat map tile provider, passing it the latlngs of the police stations.
+        mProvider = new HeatmapTileProvider.Builder()
+                .data(retrivePositions)
+                .build();
+        // Add a tile overlay to the map, using the heat map tile provider.
+        mOverlay = mMap.addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
+    }
+
+    public void jump(View view){
+        String packageName = "io.ionic.starter";
+        Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
+
+        if(intent == null) {
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+packageName));
+        }
+
+        startActivity(intent);
+    }
+
+    public void createHeatMap(View view){
+
+        mMap.clear();
+        mMap.getMinZoomLevel();
+        addHeatMap();
+    }
+
+
+
+
+
+    private String getUrl(double latitude, double longitude, String nearbyPlace) {
+
+        StringBuilder googlePlacesUrl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+        googlePlacesUrl.append("location=" + latitude + "," + longitude);
+        googlePlacesUrl.append("&radius=" + PROXIMITY_RADIUS);
+        googlePlacesUrl.append("&type=" + nearbyPlace);
+        googlePlacesUrl.append("&sensor=true");
+        googlePlacesUrl.append("&key=" + "AIzaSyCUyt8THJ-_Bs9ACVZyDFH1E3jIiAzHql8");
+        Log.d("getUrl", googlePlacesUrl.toString());
+        return (googlePlacesUrl.toString());
+    }
+
+
+    public void setNearbyRestaurants(){
+
+        //to get nearby restaurants
+        String Restaurant = "restaurant";
+        //mMap.clear();
+        String url = getUrl(latLng.latitude, latLng.longitude, Restaurant);
+        Object[] DataTransfer = new Object[3];
+        DataTransfer[0] = mMap;
+        DataTransfer[1] = url;
+        DataTransfer[2] = Restaurant;
+        Log.d("onClick", url);
+        GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+        getNearbyPlacesData.execute(DataTransfer);
+
+    }
+
+    public void setNearbyHospitals(){
+        //to get nearby hospitals
+        String Hospital = "hospital";
+        Log.d("onClick", "Button is Clicked");
+        String url = getUrl(latLng.latitude, latLng.longitude, Hospital);
+        Object[] DataTransfer = new Object[3];
+        DataTransfer[0] = mMap;
+        DataTransfer[1] = url;
+        DataTransfer[2] = Hospital;
+        Log.d("onClick", url);
+        GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+        getNearbyPlacesData.execute(DataTransfer);
+    }
+
+    public void setNearybySchools(){
+        //to get nearby schools
+        String School = "school";
+        Log.d("onClick", "Button is Clicked");
+        String url = getUrl(latLng.latitude, latLng.longitude, School);
+        Object[] DataTransfer = new Object[3];
+        DataTransfer[0] = mMap;
+        DataTransfer[1] = url;
+        DataTransfer[2] = School;
+        Log.d("onClick", url);
+        GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+        getNearbyPlacesData.execute(DataTransfer);
     }
 }
