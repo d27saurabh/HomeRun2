@@ -1,174 +1,181 @@
 package javahelps.com.test3database;
 
-/**
- * Created by admin on 10/16/2017.
- */
+
 
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 
+import android.util.Log;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.maps.model.LatLng;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+
+
 public class DatabaseAccess {
-    private SQLiteOpenHelper openHelper;
-    private SQLiteDatabase database;
-    private static DatabaseAccess instance;
 
 
-    private DatabaseAccess(Context context) {
-        this.openHelper = new DatabaseOpenHelper(context);
-    }
+    private static final String GET_ALL_HOUSES = "http://129.174.126.235:5959/api/housing/";
 
+    private static DatabaseAccess instance = new DatabaseAccess();
 
-    public static DatabaseAccess getInstance(Context context) {
-        if (instance == null) {
-            instance = new DatabaseAccess(context);
-        }
+    public static DatabaseAccess getInstance() {
         return instance;
     }
 
 
-    public void open() {
-        this.database = openHelper.getWritableDatabase();
-    }
 
 
-    public void close() {
-        if (database != null) {
-            this.database.close();
-        }
-    }
+    public ArrayList<HouseDetails> housedetails(Context context,String userInput) {
 
-/*
-    public ArrayList<HouseDetails> housedetails() {
-        ArrayList<HouseDetails> arraylist = new ArrayList<>();
-            Cursor cursor = database.rawQuery("SELECT addressname,county,state,zipcode,price,latval,longval FROM detailsval" +
-                    " WHERE state='" + StartActivity.mState.getText() +
-                    "' and county ='" + StartActivity.mCity.getText() +
-                    "' and zipcode =" + StartActivity.mZipcode.getText()
-                    + ";", null);
-            cursor.moveToFirst();
-            while (!cursor.isAfterLast()) {
-                HouseDetails addressdetails1 = new HouseDetails(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
-                arraylist.add(addressdetails1);
-                cursor.moveToNext();
-            }
-            cursor.close();
+        String query_url = "";
+        final ArrayList<HouseDetails> houseList = new ArrayList<>();
 
-        return arraylist;
-    }
-
-    public ArrayList<LatLng> position_details(){
-        ArrayList<LatLng> position =  new ArrayList<>();
-            Cursor cursor_latlng = database.rawQuery("SELECT latval,longval FROM detailsval" +
-                    " WHERE state='" + StartActivity.mState.getText() +
-                    "' and county ='" + StartActivity.mCity.getText() +
-                    "' and zipcode =" + StartActivity.mZipcode.getText()
-                    + ";", null);
-            cursor_latlng.moveToFirst();
-            while (!cursor_latlng.isAfterLast()) {
-                LatLng addressPosition = new LatLng(cursor_latlng.getFloat(0), cursor_latlng.getFloat(1));
-                position.add(addressPosition);
-                cursor_latlng.moveToNext();
-            }
-            cursor_latlng.close();
-
-        return position;
-    }*/
-
-    public ArrayList<HouseDetails> housedetails(String userInput) {
-        ArrayList<HouseDetails> arraylist = new ArrayList<>();
-        Cursor cursor = null;
         int numSpaces = 0;
         String[] splitUserInput = userInput.split(" ");
 
         //to count the number of spaces in the selected string
-        for(char c : userInput.toCharArray()){
+        for (char c : userInput.toCharArray()) {
             if (c == ' ') {
-                numSpaces = numSpaces +1;
+                numSpaces = numSpaces + 1;
             }
         }
 
         System.out.println("Value of numSpaces" + numSpaces);
 
-        switch(numSpaces){
-            case 0: cursor = database.rawQuery("SELECT addressname,county,state,zipcode,price,latval,longval FROM detailsval" +
-                    " WHERE state='" + splitUserInput[0]
-                    + "';", null);
-                    break;
+        switch (numSpaces) {
+            case 0:
+                query_url = GET_ALL_HOUSES + "State=" + splitUserInput[0];
+                break;
 
-            case 1: cursor = database.rawQuery("SELECT addressname,county,state,zipcode,price,latval,longval FROM detailsval" +
-                    " WHERE state='" + splitUserInput[0] +
-                    "' and UPPER(county) LIKE UPPER ('%" + splitUserInput[1]
-                    + "%');", null);
-                    break;
+            case 1:
+                String modifiedLocality = splitUserInput[1].substring(0,1).toUpperCase() + splitUserInput[1].substring(1).toLowerCase();
+                query_url = GET_ALL_HOUSES + "State=" + splitUserInput[0] + "\\Locality=" + modifiedLocality;
+                break;
 
-            case 2: cursor = database.rawQuery("SELECT addressname,county,state,zipcode,price,latval,longval FROM detailsval" +
-                    " WHERE zipcode ='" + splitUserInput[2]
-                    + "';", null);
-                    break;
+            case 2:
+                query_url = GET_ALL_HOUSES + "ZipCode=" + splitUserInput[2];
+                break;
 
-            default: System.out.println("numspaces value is not 0 1 or 2");
-                    break;
+            default:
+                System.out.println("numspaces value is not 0 1 or 2");
+                break;
         }
 
-        cursor.moveToFirst();
-            while (!cursor.isAfterLast()) {
-                HouseDetails addressdetails1 = new HouseDetails(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
-                arraylist.add(addressdetails1);
-                cursor.moveToNext();
-            }
-            cursor.close();
 
-        return arraylist;
+        final JsonArrayRequest getHouses = new JsonArrayRequest(Request.Method.GET, query_url, new JSONArray(), new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                System.out.println(response.toString());
+
+                try {
+                    //JSONArray houses = response;
+                    for (int i = 0; i < response.length(); i++) {
+                        JSONObject house = response.getJSONObject(i);
+                        String Address = house.getString("Address");
+                        String Locality = house.getString("Locality");
+                        String State = house.getString("State");
+                        String ZipCode = house.getString("ZipCode");
+                        Double Price = house.getDouble("Price");
+                        HouseDetails newHouse = new HouseDetails(Address, Locality, State, ZipCode, Price);
+                        houseList.add(newHouse);
+
+                    }
+                } catch (JSONException e) {
+                    Log.v("JSON", "EXEC" + e.getLocalizedMessage());
+                }
+                //System.out.println("The first home on the list is : " + houseList.get(0).getName());
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.v("API", "Err" + error.getLocalizedMessage());
+            }
+        });
+        Volley.newRequestQueue(context).add(getHouses); // to call the JSONarrayrequest response
+        return houseList;
+
     }
 
-    public ArrayList<LatLng> position_details(String userInput){
-        ArrayList<LatLng> position =  new ArrayList<>();
-        Cursor cursor_latlng = null;
 
-        int numSpaces = 0;
-        String[] splitUserInput = userInput.split(" ");
+    public ArrayList<LatLng> position_details(Context context, String userInput) {
+
+          String query_url = "";
+          final ArrayList<LatLng> positionList = new ArrayList<>();
+
+           //Cursor cursor_latlng = null;
+           int numSpaces = 0;
+
+           String[] splitUserInput = userInput.split(" ");
 
         //to count the number of spaces in the selected string
-        for(char c : userInput.toCharArray()){
+        for (char c : userInput.toCharArray()) {
             if (c == ' ') {
-                numSpaces = numSpaces +1;
+                numSpaces = numSpaces + 1;
             }
         }
 
-        switch(numSpaces){
-            case 0: cursor_latlng = database.rawQuery("SELECT latval,longval FROM detailsval" +
-                    " WHERE state='" + splitUserInput[0]
-                    + "';", null);
+        System.out.println("Value of numSpaces" + numSpaces);
+
+        switch (numSpaces) {
+            case 0: query_url = GET_ALL_HOUSES + "State=" + splitUserInput[0];
                 break;
 
-            case 1: cursor_latlng = database.rawQuery("SELECT latval,longval FROM detailsval" +
+            case 1: query_url = GET_ALL_HOUSES + "State=" + splitUserInput[0] + "\\Locality=" + splitUserInput[1];
+
+                /*cursor = database.rawQuery("SELECT addressname,county,state,zipcode,price,latval,longval FROM detailsval" +
                     " WHERE state='" + splitUserInput[0] +
                     "' and UPPER(county) LIKE UPPER ('%" + splitUserInput[1]
                     + "%');", null);
-                break;
+                break;*/
 
-            case 2: cursor_latlng = database.rawQuery("SELECT latval,longval FROM detailsval" +
-                    " WHERE zipcode ='" + splitUserInput[2]
-                    + "';", null);
+            case 2: query_url = GET_ALL_HOUSES + "ZipCode=" + splitUserInput[2];
                 break;
 
             default: System.out.println("numspaces value is not 0 1 or 2");
                 break;
         }
-            cursor_latlng.moveToFirst();
-            while (!cursor_latlng.isAfterLast()) {
-                LatLng addressPosition = new LatLng(cursor_latlng.getFloat(0), cursor_latlng.getFloat(1));
-                position.add(addressPosition);
-                cursor_latlng.moveToNext();
-            }
-            cursor_latlng.close();
 
-        return position;
+        final JsonArrayRequest getPositions = new JsonArrayRequest(Request.Method.GET, query_url, new JSONArray(), new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                System.out.println(response.toString());
+
+                try {
+                    //JSONArray positions = response;
+                    for (int i = 0; i < response.length(); i++) {
+                        JSONObject position = response.getJSONObject(i);
+                        double Latitude = Double.parseDouble(position.getString("Latitude"));
+                        double Longitude = Double.parseDouble(position.getString("Longitude"));
+                        LatLng newPosition = new LatLng(Latitude,Longitude);
+                        positionList.add(newPosition);
+
+                    }
+                } catch (JSONException e) {
+                    Log.v("JSON", "EXEC" + e.getLocalizedMessage());
+                }
+                //System.out.println("The first home on the list is : " + houseList.get(0).getName());
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.v("API", "Err" + error.getLocalizedMessage());
+            }
+        });
+        Volley.newRequestQueue(context).add(getPositions); // to call the JSONarrayrequest response
+        return positionList;
     }
+
+
 }

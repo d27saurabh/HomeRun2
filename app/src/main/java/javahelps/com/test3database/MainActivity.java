@@ -67,6 +67,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
 
+    private ArrayList<HouseDetails> retrivedetails;
+    private ArrayList<LatLng> retrivePositions;
+
 
 
     @Override
@@ -74,6 +77,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getLocationPermission();
+
+
 
         if(savedInstanceState == null){
             Bundle extras = getIntent().getExtras();
@@ -88,11 +93,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         final ListView mListView = (ListView) findViewById(R.id.listView);
-        DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this);
-        databaseAccess.open();
-        final ArrayList<HouseDetails> retrivedetails = databaseAccess.housedetails(iReceiveFromFirstActivity);
-        final ArrayList<LatLng> retrivePositions = databaseAccess.position_details(iReceiveFromFirstActivity);
-        databaseAccess.close();
+        //DatabaseAccess databaseAccess = new DatabaseAccess();
+
+        retrivedetails = DatabaseAccess.getInstance().housedetails(this, iReceiveFromFirstActivity);
+        retrivePositions = DatabaseAccess.getInstance().position_details(this, iReceiveFromFirstActivity);
+
 
         final PersonListAdapter adapter = new PersonListAdapter(this, R.layout.adapter_view_layout, retrivedetails);
         mListView.setAdapter(adapter);
@@ -357,10 +362,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void markLocations(){
-        DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this);
-        databaseAccess.open();
-        ArrayList<HouseDetails> retrivedetails = databaseAccess.housedetails(iReceiveFromFirstActivity);
-        ArrayList<LatLng> retrivePositions = databaseAccess.position_details(iReceiveFromFirstActivity);
+
+//        DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this);
+//        databaseAccess.open();
+//        ArrayList<HouseDetails> retrivedetails = databaseAccess.housedetails(iReceiveFromFirstActivity);
+//        ArrayList<LatLng> retrivePositions = databaseAccess.position_details(iReceiveFromFirstActivity);
+        retrivedetails = DatabaseAccess.getInstance().housedetails(this, iReceiveFromFirstActivity);
+        retrivePositions = DatabaseAccess.getInstance().position_details(this, iReceiveFromFirstActivity);
+
         int i=0;
 
         //Adding markers according to the location values from db(on state zip and city selected)
@@ -370,13 +379,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .position(location)
                     .title(String.valueOf(retrivedetails.get(i).getAddress()))
                     .alpha(0.85f);
-                    if((Integer.parseInt(retrivedetails.get(i).getPrice()) > 0) && (Integer.parseInt(retrivedetails.get(i).getPrice()) <= 500000)){
+                    if((Math.round(retrivedetails.get(i).getPrice()) > 0) && (Math.round(retrivedetails.get(i).getPrice()) <= 500000)){
                         options.icon(BitmapDescriptorFactory.defaultMarker(60f));;
                     }
-                    else if ((Integer.parseInt(retrivedetails.get(i).getPrice()) > 500000) && (Integer.parseInt(retrivedetails.get(i).getPrice()) <= 1000000)){
+                    else if ((Math.round(retrivedetails.get(i).getPrice()) > 500000) && (Math.round(retrivedetails.get(i).getPrice()) <= 1000000)){
                         options.icon(BitmapDescriptorFactory.defaultMarker(180f));;
                     }
-                    else if ((Integer.parseInt(retrivedetails.get(i).getPrice()) > 1000000) && (Integer.parseInt(retrivedetails.get(i).getPrice()) <= 1500000)){
+                    else if ((Math.round(retrivedetails.get(i).getPrice()) > 1000000) && (Math.round(retrivedetails.get(i).getPrice()) <= 1500000)){
                         options.icon(BitmapDescriptorFactory.defaultMarker(30f));;
                     }else {
                         options.icon(BitmapDescriptorFactory.defaultMarker(0f));;
@@ -388,8 +397,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             moveCamera(location,12f);
             i++;
         }
-
-        databaseAccess.close();
 
     }
 
@@ -421,10 +428,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void addHeatMap() {
 
         //get the locations from database
-        DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this);
-        databaseAccess.open();
 
-        ArrayList<LatLng> retrivePositions = databaseAccess.position_details(iReceiveFromFirstActivity);
+        retrivePositions = DatabaseAccess.getInstance().position_details(this,iReceiveFromFirstActivity);
 
         // Create a heat map tile provider, passing it the latlngs of the police stations.
         mProvider = new HeatmapTileProvider.Builder()

@@ -31,7 +31,7 @@ public class PersonListAdapter extends ArrayAdapter<HouseDetails> {
 
     static class ViewHolder {
         TextView address;
-        TextView county;
+        TextView locality;
         TextView state;
         TextView zipcode;
         TextView price;
@@ -48,13 +48,13 @@ public class PersonListAdapter extends ArrayAdapter<HouseDetails> {
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         //get the persons information
         String address = getItem(position).getAddress();
-        String county = getItem(position).getCounty();
+        String locality = getItem(position).getLocality();
         String state = getItem(position).getState();
         String zipcode = getItem(position).getZipcode();
-        String price = getItem(position).getPrice();
+        Double price = getItem(position).getPrice();
 
         //Create a person object with the information
-        HouseDetails housedet = new HouseDetails(address, county, state, zipcode, price);
+        HouseDetails housedet = new HouseDetails(address, locality, state, zipcode, price);
 
         final View result;
         ViewHolder holder = new ViewHolder();
@@ -64,7 +64,7 @@ public class PersonListAdapter extends ArrayAdapter<HouseDetails> {
             convertView = inflater.inflate(mResource, parent, false);
 
             holder.address = (TextView) convertView.findViewById(R.id.textView1);
-            holder.county = (TextView) convertView.findViewById(R.id.textView2);
+            holder.locality = (TextView) convertView.findViewById(R.id.textView2);
             holder.state = (TextView) convertView.findViewById(R.id.textView3);
             holder.zipcode = (TextView) convertView.findViewById(R.id.textView4);
             holder.price = (TextView) convertView.findViewById(R.id.textView5);
@@ -82,10 +82,10 @@ public class PersonListAdapter extends ArrayAdapter<HouseDetails> {
 
 
         holder.address.setText(housedet.getAddress());
-        holder.county.setText(housedet.getCounty());
+        holder.locality.setText(housedet.getLocality());
         holder.state.setText(housedet.getState());
         holder.zipcode.setText(housedet.getZipcode());
-        holder.price.setText(housedet.getPrice());
+        holder.price.setText(Double.toString(housedet.getPrice()));
 
         if(MainActivity.CABMode == 1){
 
