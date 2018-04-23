@@ -252,8 +252,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.setIndoorEnabled(true);
 
         }
-
-
         
     }
 
@@ -378,18 +376,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             MarkerOptions options = new MarkerOptions()
                     .position(location)
                     .title(String.valueOf(retrivedetails.get(i).getAddress()))
-                    .alpha(0.85f);
-                    if((Math.round(retrivedetails.get(i).getPrice()) > 0) && (Math.round(retrivedetails.get(i).getPrice()) <= 500000)){
-                        options.icon(BitmapDescriptorFactory.defaultMarker(60f));;
-                    }
-                    else if ((Math.round(retrivedetails.get(i).getPrice()) > 500000) && (Math.round(retrivedetails.get(i).getPrice()) <= 1000000)){
-                        options.icon(BitmapDescriptorFactory.defaultMarker(180f));;
-                    }
-                    else if ((Math.round(retrivedetails.get(i).getPrice()) > 1000000) && (Math.round(retrivedetails.get(i).getPrice()) <= 1500000)){
-                        options.icon(BitmapDescriptorFactory.defaultMarker(30f));;
-                    }else {
-                        options.icon(BitmapDescriptorFactory.defaultMarker(0f));;
-                    }
+                    .alpha(0.85f)
+                    .icon(BitmapDescriptorFactory.defaultMarker(0f));
 
 
             mMap.addMarker(options);

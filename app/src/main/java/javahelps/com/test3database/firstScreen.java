@@ -41,7 +41,7 @@ public class firstScreen extends AppCompatActivity {
         setContentView(R.layout.activity_first_screen);
 
 
-        getdata("http://www.gomashup.com/json.php?fds=geo/usa/zipcode/state/VA&jsoncallback=");
+        getdata("http://www.gomashup.com/json.php?fds=geo/usa/zipcode/state/CT&jsoncallback=");
 
 
         /*DownloadTask task = new DownloadTask();

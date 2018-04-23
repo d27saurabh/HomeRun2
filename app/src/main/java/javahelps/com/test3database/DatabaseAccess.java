@@ -37,6 +37,8 @@ public class DatabaseAccess {
 
     public ArrayList<HouseDetails> housedetails(Context context,String userInput) {
 
+        System.out.println("userinput in housedetailsmethod" + userInput);
+
         String query_url = "";
         final ArrayList<HouseDetails> houseList = new ArrayList<>();
 
@@ -50,6 +52,7 @@ public class DatabaseAccess {
             }
         }
 
+
         System.out.println("Value of numSpaces" + numSpaces);
 
         switch (numSpaces) {
@@ -59,7 +62,7 @@ public class DatabaseAccess {
 
             case 1:
                 String modifiedLocality = splitUserInput[1].substring(0,1).toUpperCase() + splitUserInput[1].substring(1).toLowerCase();
-                query_url = GET_ALL_HOUSES + "State=" + splitUserInput[0] + "\\Locality=" + modifiedLocality;
+                query_url = GET_ALL_HOUSES + "State=" + splitUserInput[0] + "/Locality=" + modifiedLocality;
                 break;
 
             case 2:
@@ -70,6 +73,8 @@ public class DatabaseAccess {
                 System.out.println("numspaces value is not 0 1 or 2");
                 break;
         }
+
+        System.out.println("Query url(housedeatils):" + query_url );
 
 
         final JsonArrayRequest getHouses = new JsonArrayRequest(Request.Method.GET, query_url, new JSONArray(), new Response.Listener<JSONArray>() {
@@ -103,6 +108,10 @@ public class DatabaseAccess {
             }
         });
         Volley.newRequestQueue(context).add(getHouses); // to call the JSONarrayrequest response
+
+        for(HouseDetails x:houseList){
+            System.out.println(x.getAddress().toString()+" "+x.getLocality().toString()+" "+x.getState().toString());
+        }
         return houseList;
 
     }
@@ -110,11 +119,10 @@ public class DatabaseAccess {
 
     public ArrayList<LatLng> position_details(Context context, String userInput) {
 
+        Log.d("DatabaseAccess","Inside position details function");
           String query_url = "";
           final ArrayList<LatLng> positionList = new ArrayList<>();
-
-           //Cursor cursor_latlng = null;
-           int numSpaces = 0;
+          int numSpaces = 0;
 
            String[] splitUserInput = userInput.split(" ");
 
@@ -125,19 +133,14 @@ public class DatabaseAccess {
             }
         }
 
-        System.out.println("Value of numSpaces" + numSpaces);
+        //System.out.println("Value of numSpaces" + numSpaces);
 
         switch (numSpaces) {
             case 0: query_url = GET_ALL_HOUSES + "State=" + splitUserInput[0];
                 break;
 
-            case 1: query_url = GET_ALL_HOUSES + "State=" + splitUserInput[0] + "\\Locality=" + splitUserInput[1];
-
-                /*cursor = database.rawQuery("SELECT addressname,county,state,zipcode,price,latval,longval FROM detailsval" +
-                    " WHERE state='" + splitUserInput[0] +
-                    "' and UPPER(county) LIKE UPPER ('%" + splitUserInput[1]
-                    + "%');", null);
-                break;*/
+            case 1: query_url = GET_ALL_HOUSES + "State=" + splitUserInput[0] + "/Locality=" + splitUserInput[1];
+                break;
 
             case 2: query_url = GET_ALL_HOUSES + "ZipCode=" + splitUserInput[2];
                 break;
@@ -149,16 +152,16 @@ public class DatabaseAccess {
         final JsonArrayRequest getPositions = new JsonArrayRequest(Request.Method.GET, query_url, new JSONArray(), new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                System.out.println(response.toString());
 
                 try {
-                    //JSONArray positions = response;
-                    for (int i = 0; i < response.length(); i++) {
-                        JSONObject position = response.getJSONObject(i);
+                    JSONArray positions = response;
+                    for (int i = 0; i < positions.length(); i++) {
+                        JSONObject position = positions.getJSONObject(i);
                         double Latitude = Double.parseDouble(position.getString("Latitude"));
                         double Longitude = Double.parseDouble(position.getString("Longitude"));
                         LatLng newPosition = new LatLng(Latitude,Longitude);
                         positionList.add(newPosition);
+                        System.out.println(positionList.get(0));
 
                     }
                 } catch (JSONException e) {
