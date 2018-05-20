@@ -8,8 +8,15 @@
         android:icon="@drawable/spider"
         app:showAsAction="always"
         android:contentDescription="Spider Graph">
+    </item>
 
+    <item android:title="MC"
+        android:id="@+id/mc"
+        android:icon="@drawable/mc"
+        app:showAsAction="always"
+        android:contentDescription="Mortgage Calculator">
 
     </item>
+
 
 </menu>

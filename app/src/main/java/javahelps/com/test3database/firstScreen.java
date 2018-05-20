@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -235,10 +236,17 @@ public class firstScreen extends AppCompatActivity {
     public void Search(View v){
 
         System.out.println("Value of the user input: " + mUserSelected);
-        Intent i = new Intent(this, MainActivity.class);
-        i.putExtra("userSelectedDetail",mUserSelected);
+        if(mUserSelected!=null){
+            Intent i = new Intent(this, MainActivity.class);
+            i.putExtra("userSelectedDetail",mUserSelected);
+            startActivity(i);
+        }
+        else if(mUserSelected == "" || mUserSelected==null){
+            Toast.makeText(this,"Please reselect",Toast.LENGTH_LONG).show();
 
-        startActivity(i);
+        }
+
+
     }
 }
 

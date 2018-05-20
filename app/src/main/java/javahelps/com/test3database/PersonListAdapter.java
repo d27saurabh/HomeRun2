@@ -29,6 +29,7 @@ public class PersonListAdapter extends ArrayAdapter<HouseDetails> {
     private int lastposition = -1;
     private HashMap<Integer, Boolean> mSelection = new HashMap<Integer, Boolean>();
 
+
     static class ViewHolder {
         TextView address;
         TextView locality;
@@ -43,7 +44,7 @@ public class PersonListAdapter extends ArrayAdapter<HouseDetails> {
         mResource = resource;
     }
 
-    @NonNull
+        @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         //get the persons information
@@ -53,8 +54,9 @@ public class PersonListAdapter extends ArrayAdapter<HouseDetails> {
         String zipcode = getItem(position).getZipcode();
         Double price = getItem(position).getPrice();
 
-        //Create a person object with the information
-        HouseDetails housedet = new HouseDetails(address, locality, state, zipcode, price);
+        //Create a house object with the information
+            HouseDetails housedet = new HouseDetails(address, locality, state, zipcode, price);
+
 
         final View result;
         ViewHolder holder = new ViewHolder();
@@ -91,10 +93,10 @@ public class PersonListAdapter extends ArrayAdapter<HouseDetails> {
 
             convertView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.default_color));//default color
             if (mSelection.get(position) != null) {
-                convertView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.pressed_color));;// this is a selected position so make it red
+                convertView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.pressed_color));;// this is a selected position so make it grey
+
             }
         }
-
 
         return convertView;
 
