@@ -2,37 +2,37 @@ package javahelps.com.test3database;
 
 public class SpiderGraphDetails {
 
-    private Double area;
-    private Double price;
-    private Double estimatedRent;
-    private String houseType;
-    private String zipCode;
+    private Double AreaSpace_SQFT = 0.0;
+    private Double Price = 0.0;
+    private Double EstimatedRent = 0.0;
+    private String Status = "";
+    private String ZipCode = "";
 
-    public SpiderGraphDetails(Double area, Double price, Double estimatedRent, String houseType, String zipCode) {
-        this.area = area;
-        this.price = price;
-        this.estimatedRent = estimatedRent;
-        this.houseType = houseType;
-        this.zipCode = zipCode;
+    public SpiderGraphDetails(Double areaSpace_SQFT, Double price, Double estimatedRent, String status, String zipCode) {
+        AreaSpace_SQFT = areaSpace_SQFT;
+        Price = price;
+        EstimatedRent = estimatedRent;
+        Status = status;
+        ZipCode = zipCode;
     }
 
-    public Double getArea() {
-        return area;
+    public Double getAreaSpace_SQFT() {
+        return AreaSpace_SQFT;
     }
 
     public Double getPrice() {
-        return price;
+        return Price;
     }
 
     public Double getEstimatedRent() {
-        return estimatedRent;
+        return EstimatedRent;
     }
 
-    public String getHouseType() {
-        return houseType;
+    public String getStatus() {
+        return Status;
     }
 
     public String getZipCode() {
-        return zipCode;
+        return ZipCode;
     }
 }

@@ -323,49 +323,37 @@ public class DatabaseAccess {
 
         final ArrayList<SpiderGraphDetails> graphList = new ArrayList<>();
 
-        mRequestStartTime = System.currentTimeMillis();
-
-        final JsonArrayRequest getgraphDetails = new JsonArrayRequest(Request.Method.GET, query_url, new JSONArray(), new Response.Listener<JSONArray>() {
+        final JsonArrayRequest getGraphDetails = new JsonArrayRequest(Request.Method.GET, query_url, new JSONArray(), new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                Log.d(TAG,"inside the onResponse ");
-               System.out.println("graph query response"+ response.toString());
+                System.out.println(response.toString());
+
                 try {
                     JSONArray positions = response;
-                    detailsForSpiderGraph = positions;
                     for (int i = 0; i < positions.length(); i++) {
                         JSONObject position = positions.getJSONObject(i);
-                        Double area = Double.parseDouble(position.getString("AreaSpace_SQFT"));
-                        Double price = Double.parseDouble(position.getString("Price"));
-                        Double estimatedRent = Double.parseDouble(position.getString("EstimatedRent"));
+                        Double area = position.getDouble("AreaSpace_SQFT");
+                        Double price = position.getDouble("Price");
+                        Double estimatedRent = position.getDouble("EstimatedRent");
                         String houseType = position.getString("Status");
                         String zipCode = position.getString("ZipCode");
 
-                        SpiderGraphDetails newposition = new SpiderGraphDetails(area,price,estimatedRent,houseType,zipCode);
-                        Log.d(TAG,"area for address one:"+String.valueOf(newposition.getArea()));
-                        graphList.add(newposition);
-
-                        long totalRequestTime = System.currentTimeMillis() - mRequestStartTime;
-
-                        Log.d(TAG,"time required" + totalRequestTime);
-
-                       Log.d(TAG,"newposition area value in inner class"+String.valueOf(newposition.getArea()));
+                        SpiderGraphDetails newPosition = new SpiderGraphDetails(area,price,estimatedRent,houseType,zipCode);
+                        graphList.add(newPosition);
 
                     }
                 } catch (JSONException e) {
                     Log.v("JSON", "EXEC" + e.getLocalizedMessage());
                 }
+                System.out.println("The first home on the list is : " + graphList.get(0).getPrice());
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.v("API", "Err" + error.getLocalizedMessage());
-                long totalRequestTime = System.currentTimeMillis() - mRequestStartTime;
             }
         });
-        Volley.newRequestQueue(context).add(getgraphDetails); // to call the JSONarrayrequest response
-
-       // Log.d(TAG,"newposition area value"+String.valueOf(graphList.get(0).getEstimatedRent()));
+        Volley.newRequestQueue(context).add(getGraphDetails); // to call the JSONarrayrequest response
         return graphList;
     }
 }
