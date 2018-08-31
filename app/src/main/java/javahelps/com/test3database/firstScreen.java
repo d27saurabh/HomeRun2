@@ -167,7 +167,7 @@ public class firstScreen extends AppCompatActivity {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        //find and get the city value from downloaded source code
+                        //find and get the city value
                         Pattern p = Pattern.compile("City\" : \"(.*?)\",");
                         Matcher m = p.matcher(response);
 
@@ -176,7 +176,7 @@ public class firstScreen extends AppCompatActivity {
                             City.add(m.group(1));
                         }
 
-                        //find and get the zipcode value from downloaded source code
+                        //find and get the zipcode value
                         p = Pattern.compile("Zipcode\" : \"(.*?)\",");
                         m = p.matcher(response);
 
@@ -186,7 +186,7 @@ public class firstScreen extends AppCompatActivity {
                         }
 
 
-                        //find and get the state value from downloaded source code
+                        //find and get the state value
                         p = Pattern.compile("State\" : \"(.*?)\",");
                         m = p.matcher(response);
 

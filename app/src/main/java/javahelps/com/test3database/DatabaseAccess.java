@@ -23,9 +23,9 @@ import java.util.ArrayList;
 public class DatabaseAccess {
 
 
-    private static final String GET_ALL_HOUSES = "http://129.174.126.235:5959/api/housing/";
-    private static final String GET_ALL_POSITIONS = "http://129.174.126.235:5959/api/housing/Coordinates/";
-    private static final String GET_ALL_GRAPHDETAILS = "http://129.174.126.235:5959/api/housing/";
+    private static final String GET_ALL_HOUSES = "http://129.174.126.249:5959/api/housing/";
+    private static final String GET_ALL_POSITIONS = "http://129.174.126.249:5959/api/housing/Coordinates/";
+    private static final String GET_ALL_GRAPHDETAILS = "http://129.174.126.249:5959/api/housing/";
     private static DatabaseAccess instance = new DatabaseAccess();
     private static final String TAG = "DatabaseActivity";
 
@@ -104,7 +104,7 @@ public class DatabaseAccess {
             }
         });
         Volley.newRequestQueue(context).add(getHouses); // to call the JSONarrayrequest response
-       // Log.d(TAG,"Address Vlaue:"+houseList.get(0).getAddress());
+        // Log.d(TAG,"Address Vlaue:"+houseList.get(0).getAddress());
         return houseList;
 
     }
@@ -354,6 +354,81 @@ public class DatabaseAccess {
             }
         });
         Volley.newRequestQueue(context).add(getGraphDetails); // to call the JSONarrayrequest response
+        System.out.println("The first home on the list is : " + graphList.get(0).getPrice());
         return graphList;
     }
+
+    public ArrayList<HouseDetails> fiterdetails(Context context,String userInput) {
+
+        String query_url = "";
+        final ArrayList<HouseDetails> houseList = new ArrayList<>();
+        int numSpaces = 0;
+        String[] splitUserInput = userInput.split(" ");
+
+        //to count the number of spaces in the selected string
+        for (char c : userInput.toCharArray()) {
+            if (c == ' ') {
+                numSpaces = numSpaces + 1;
+            }
+        }
+        switch (numSpaces) {
+            case 0:
+                query_url = GET_ALL_HOUSES + "State=" + splitUserInput[0];
+                break;
+
+            case 1:
+                String modifiedLocality = splitUserInput[1].substring(0,1).toUpperCase() + splitUserInput[1].substring(1).toLowerCase();
+                query_url = GET_ALL_HOUSES + "State=" + splitUserInput[0] + "/Locality=" + modifiedLocality;
+                break;
+
+            case 2:
+                query_url = GET_ALL_HOUSES + "ZipCode=" + splitUserInput[2];
+                break;
+
+            default:
+                System.out.println("numspaces value is not 0 1 or 2");
+                break;
+        }
+        query_url = query_url + "/" + 0;
+        System.out.println("Query url(housedeatils):" + query_url );
+
+        String route = "CT/bed=5/Bath=2/Area=1800/Price=1400000/estRent=6000";
+        String url = "http://129.174.126.235:5959/api/housing/" + route;
+
+        final ArrayList<HouseDetails> priceList = new ArrayList<>();
+
+        final JsonArrayRequest getHouseDetails = new JsonArrayRequest(Request.Method.GET, url, new JSONArray(), new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                System.out.println(response.toString());
+
+                try {
+                    JSONArray positions = response;
+                    for (int i = 0; i < positions.length(); i++) {
+                        JSONObject position = positions.getJSONObject(i);
+                        String Address = position.getString("Address");
+                        String Locality = position.getString("Locality");
+                        String State = position.getString("State");
+                        String ZipCode = position.getString("ZipCode");
+                        Double Price = position.getDouble("Price");
+
+                        HouseDetails newPrices = new HouseDetails(Address, Locality, State, ZipCode, Price);
+                        priceList.add(newPrices);
+
+                    }
+                } catch (JSONException e) {
+                    Log.v("JSON", "EXEC" + e.getLocalizedMessage());
+                }
+                System.out.println("The first home on the list is : " + priceList.get(0).getPrice());
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.v("API", "Err" + error.getLocalizedMessage());
+            }
+        });
+        Volley.newRequestQueue(context).add(getHouseDetails); // to call the JSONarrayrequest response
+        return priceList;
+    }
+
 }

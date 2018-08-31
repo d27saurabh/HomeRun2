@@ -261,24 +261,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-                //view.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorMenu));
                 //Creates a new marker set
                 MarkerOptions options = new MarkerOptions();
                 //clears the existing map
                 mMap.clear();
-                //getting all the markers.
-                //markLocations();
-
-
-               /* for(LatLng location : retrivePositions) {
-                    options.position(location)
-                            .icon(BitmapDescriptorFactory.defaultMarker(270f));
-                    mMap.addMarker(options);
-                }*/
-                //options.icon(BitmapDescriptorFactory.defaultMarker(0f));
-                //moveCamera(retrivePositions.get(i),12f);
-                Log.d(TAG, "onItemClick: postion obtained" + retrivePositions.get(i));
                 options.position(retrivePositions.get(i))
                         .title(String.valueOf(retrivedetails.get(i).getAddress()))
                         .alpha(1f)
@@ -363,11 +349,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             //Send result to the handle
             Message msg = mHandlerPosition.obtainMessage(1,nextHundredPositions);
             mHandlerPosition.sendMessage(msg);
-
-
         }
     }
-
     public class MyhandlePosition extends Handler{
         @Override
         public void handleMessage(Message msg) {
