@@ -93,7 +93,7 @@ public class SpiderGraphActivity extends AppCompatActivity {
         Thread thread3 = new ThreadGetMoreData3();
         thread3.start();*/
 
-        addressDetails1 = DatabaseAccess.getInstance().graphDetails(getApplicationContext(),address.get(0));
+       // addressDetails1 = DatabaseAccess.getInstance().graphDetails(getApplicationContext(),address.get(0));
         //Log.d(TAG,"SpiderGraph activity area value for address1"+addressDetails1.get(0).getEstimatedRent().toString());
         //add values to entries arraylist
         entries.add(new Entry(Float.valueOf(2),0));
